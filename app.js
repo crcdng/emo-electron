@@ -73,7 +73,6 @@
     markers = !markers;     
   }
 
-  //Add a callback to notify when camera access is allowed
   detector.addEventListener("onWebcamConnectSuccess", function() {
     logf('#logs', "Webcam access ok");
     $("#face_video_canvas").css("display", "none");
@@ -81,13 +80,11 @@
     $("#face_video").css("display", "none");
   });
 
-  //Add a callback to notify when camera access is denied
   detector.addEventListener("onWebcamConnectFailure", function() {
     logf('#logs', "webcam denied");
     console.log("Webcam access denied");
   });
 
-  //Add a callback to notify when detector is stopped
   detector.addEventListener("onStopSuccess", function() {
     logf('#logs', "The detector reports stopped");
     $("#results").html("");
@@ -106,14 +103,13 @@
         return val.toFixed ? Number(val.toFixed(0)) : val;})}`);
       logf('#results', `Expressions:  + ${JSON.stringify(faces[0].expressions, function(key, val) {
         return val.toFixed ? Number(val.toFixed(0)) : val})}`);
-      // logf('#results', "Emoji: " + faces[0].emojis.dominantEmoji);
+      logf('#results', "Emoji: " + faces[0].emojis.dominantEmoji);
       if (markers) { 
         drawFeaturePoints(image, faces[0].featurePoints);
       }
     }
   });
 
-  //Draw the detected facial feature points on the image
   function drawFeaturePoints(img, featurePoints) {
     var contxt = $('#face_video_canvas')[0].getContext('2d');
 
