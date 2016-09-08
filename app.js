@@ -28,20 +28,17 @@
   });
 
   function logf(node_name, msg) {
-    log.info(node_name + " " + msg);
+    log.info(`${node_name} ${msg}`);
     // $(node_name).append("<span>" + msg + "</span><br />")
   }
 
-  //function executes when Start button is pushed.
   function onStart() {
     if (detector && !detector.isRunning) {
-      $("#logs").html("");
       detector.start();
     }
     logf('#logs', "Clicked the start button");
   }
 
-  //function executes when the Stop button is pushed.
   function onStop() {
     logf('#logs', "Clicked the stop button");
     if (detector && detector.isRunning) {
@@ -50,13 +47,10 @@
     }
   };
 
-  //function executes when the Reset button is pushed.
   function onReset() {
     logf('#logs', "Clicked the reset button");
     if (detector && detector.isRunning) {
       detector.reset();
-
-      $('#results').html("");
     }
   };
 
@@ -81,7 +75,7 @@
 
   //Add a callback to notify when camera access is allowed
   detector.addEventListener("onWebcamConnectSuccess", function() {
-    logf('#logs', "Webcam access allowed");
+    logf('#logs', "Webcam access ok");
     $("#face_video_canvas").css("display", "none");
     $("#face_video_canvas").css("visibility", "hidden");    
     $("#face_video").css("display", "none");
@@ -103,17 +97,15 @@
   //The faces object contains the list of the faces detected in an image.
   //Faces object contains probabilities for all the different expressions, emotions and appearance metrics
   detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
-    $('#results').html("");
-    logf('#results', "Timestamp: " + timestamp.toFixed(2));
-    logf('#results', "Number of faces found: " + faces.length);
+    // $('#results').html("");
+    logf('#results', `Timestamp: ${timestamp.toFixed(2)}`);
+    logf('#results', `Number of faces found: ${faces.length}`);
     if (faces.length > 0) {
-      logf('#results', "Appearance: " + JSON.stringify(faces[0].appearance));
-      logf('#results', "Emotions: " + JSON.stringify(faces[0].emotions, function(key, val) {
-        return val.toFixed ? Number(val.toFixed(0)) : val;
-      }));
-      logf('#results', "Expressions: " + JSON.stringify(faces[0].expressions, function(key, val) {
-        return val.toFixed ? Number(val.toFixed(0)) : val;
-      }));
+      logf('#results', `Appearance: ${JSON.stringify(faces[0].appearance)}`);
+      logf('#results', `Emotions: " + ${JSON.stringify(faces[0].emotions, function(key, val) {
+        return val.toFixed ? Number(val.toFixed(0)) : val;})}`);
+      logf('#results', `Expressions:  + ${JSON.stringify(faces[0].expressions, function(key, val) {
+        return val.toFixed ? Number(val.toFixed(0)) : val})}`);
       // logf('#results', "Emoji: " + faces[0].emojis.dominantEmoji);
       if (markers) { 
         drawFeaturePoints(image, faces[0].featurePoints);
