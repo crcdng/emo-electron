@@ -11,6 +11,28 @@ var height = 480;
 
 log.transports.console = false;
 
+function drawFeaturePoints(img, featurePoints) {
+  var contxt = $('#face_video_canvas')[0].getContext('2d');
+
+  var hRatio = contxt.canvas.width / img.width;
+  var vRatio = contxt.canvas.height / img.height;
+  var ratio = Math.min(hRatio, vRatio);
+
+  contxt.strokeStyle = "#FFFFFF";
+  for (var id in featurePoints) {
+    contxt.beginPath();
+    contxt.arc(featurePoints[id].x,
+      featurePoints[id].y, 2, 0, 2 * Math.PI);
+      contxt.stroke();
+
+  }
+}
+
+function logf(node_name, msg) {
+  log.info(`${node_name} ${msg}`);
+  // $(node_name).append("<span>" + msg + "</span><br />")
+}
+
 function initDetector() {
   var detector = new affdex.CameraDetector(divRoot, width, height, faceMode);
   //Enable detection of all Expressions, Emotions and Emojis classifiers.
@@ -66,9 +88,22 @@ function initDetector() {
   return detector;
 }
 
-function logf(node_name, msg) {
-  log.info(`${node_name} ${msg}`);
-  // $(node_name).append("<span>" + msg + "</span><br />")
+function onMarkers() {
+  logf('#logs', "Clicked the markers button");
+  // markers only make sense when view is enabled
+  if (!view) { return; }
+  markers = !markers;
+}
+
+function onReset() {
+  logf('#logs', "Clicked the reset button");
+  if (detector && detector.isRunning) {
+    detector.reset();
+  }
+}
+
+function onSourceChanged() {
+  
 }
 
 function onStart() {
@@ -86,13 +121,6 @@ function onStop() {
   }
 }
 
-function onReset() {
-  logf('#logs', "Clicked the reset button");
-  if (detector && detector.isRunning) {
-    detector.reset();
-  }
-}
-
 function onView() {
   logf('#logs', "Clicked the view button");
   if (!view) { // switch it on
@@ -104,29 +132,5 @@ function onView() {
   }
   view = !view;
 }
-
-function onMarkers() {
-  logf('#logs', "Clicked the markers button");
-  // markers only make sense when view is enabled
-  if (!view) { return; }
-  markers = !markers;
-}
-
-function drawFeaturePoints(img, featurePoints) {
-  var contxt = $('#face_video_canvas')[0].getContext('2d');
-
-  var hRatio = contxt.canvas.width / img.width;
-  var vRatio = contxt.canvas.height / img.height;
-  var ratio = Math.min(hRatio, vRatio);
-
-  contxt.strokeStyle = "#FFFFFF";
-  for (var id in featurePoints) {
-    contxt.beginPath();
-    contxt.arc(featurePoints[id].x,
-      featurePoints[id].y, 2, 0, 2 * Math.PI);
-      contxt.stroke();
-
-    }
-  }
 
 detector = initDetector();

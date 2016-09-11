@@ -27,6 +27,9 @@
         <br/> When a face is detected, the probabilities of the different emotions are written to the log.
         <br/> Press the stop button to end the detector.
       </p>
+
+        <button id="getsources" onclick="onGetSources">Get Sources</button>
+        <select id="sources" onchange = "onSourceChanged()"></select>
         <button id="start" onclick="onStart()">Start</button>
         <button id="stop" onclick="onStop()">Stop</button>
         <button id="reset" onclick="onReset()">Reset</button>
