@@ -12,6 +12,11 @@ var height = 480;
 
 log.transports.console = false; // broken, use console.log to log to console
 
+// required by materialize
+$(document).ready(function() {
+  $('select').material_select();
+});
+
 function drawFeaturePoints(img, featurePoints) {
   var contxt = $('#face_video_canvas')[0].getContext('2d');
 
@@ -119,6 +124,7 @@ function onGotSources(sourceInfos) {
       storageIndex++;
     }
   }
+  $('select').material_select(); // required by materialize
   onSourceChanged(); // set the initially displayed entry in the selection list
 }
 
@@ -144,19 +150,28 @@ function onSourceChanged() {
   setSourceConstraintId(selected);
 }
 
-function onStart() {
-  logf('#logs', "Clicked the start button", true);
+function start() {
+  logf('#logs', "Start", true);
   detector = initDetector();
   if (detector && !detector.isRunning) {
     detector.start();
   }
 }
 
-function onStop() {
-  logf('#logs', "Clicked the stop button", true);
+function stop() {
+  logf('#logs', "Stop", true);
   if (detector && detector.isRunning) {
     detector.removeEventListener();
     detector.stop();
+  }
+}
+
+function onToggle() {
+  logf('#logs', "Clicked the toggle switch", true);
+  if ($("#toggle").is(':checked')) {
+    start();
+  } else {
+    stop();
   }
 }
 
