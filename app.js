@@ -2,13 +2,13 @@ var detector;
 // affectiva SDK Needs to create video and canvas nodes in the DOM in order to function :((
 var divRoot = $("#affdex_elements")[0];
 var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
+var height = 480;
 var log = require('electron-log');
-var view = false;
 var markers = false;
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
+var view = false;
 var width = 640;
-var height = 480;
 
 log.transports.console = false; // broken, use console.log to log to console
 

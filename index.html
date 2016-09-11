@@ -9,48 +9,59 @@
   delete window.exports;
   delete window.module;
   </script>
-
-  <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
 </head>
 <body>
   <div class="container">
-    <p>
-      <strong>emotion logger</strong>
-      <br/> 1. Get cameras, then select a camera.
-      <br/> 2. Switch on the detector.
-      <br/> When a face is detected, the probabilities of the different emotions are written to the log file.
-      The location of the logfile (on the Mac) is: &#126;Library/Logs/emotion-logger/
-      <br/> When done, switch off the detector. Move or rename the logfile before the next session.
-    </p>
-
-    <button id="getsources" class="waves-effect waves-light btn" onclick="onGetSources()" >Get Cameras</button>
-    <br/>
-    <div class="input-field">
-      <select id="sources" col s12 onchange="onSourceChanged()">
-      </select>
+    <div class="row">
+      <div class="col m12">
+        <h5>emotion logger</h5>
+        <br/> 1. Get cameras, then select a camera.
+        <br/> 2. Switch on the detector.
+        <br/> When a face is detected, the probabilities of the different emotions are written to the log file.
+        The location of the logfile (on the Mac) is: &#126;Library/Logs/emotion-logger/
+        <br/> When done, switch off the detector. Move or rename the logfile before the next session.
+      </div>
     </div>
-    <br/>
-    <div class="switch">
-    <label>
-      Off
-      <input type="checkbox" id="toggle" onclick="onToggle()">
-      <span class="lever"></span>
-      On
-    </label>
+    <div class="row">
+      <div class="col s4">
+        <button id="getsources" class="waves-effect waves-light btn" onclick="onGetSources()">Get Cameras</button>
+      </div>
+      <div class="input-field">
+        <select id="sources" class="col s6" onchange="onSourceChanged()"></select>
+      </div>
     </div>
-    <!-- <button id="reset" onclick="onReset()">Reset</button> -->
-    <br/>
-    <input type="checkbox" value="toggleview" class="filled-in" id="toggleview" onclick="onView()" />
-    <label for="toggleview">Preview</label>
-    <br/>
-    <input type="checkbox" value="togglemarkers" class="filled-in" id="togglemarkers" onclick="onMarkers()" />
-    <label for="togglemarkers">Markers</label>
+    <div class="row">
+      <div class="col s4">
+        <div class="switch">
+          <label>
+            Off
+            <input type="checkbox" id="toggle" onclick="onToggle()">
+            <span class="lever"></span>
+            On
+          </label>
+        </div>
+      </div>
+      <!-- <button id="reset" onclick="onReset()">Reset</button> -->
+      <div class="col s4">
+        <input type="checkbox" value="toggleview" class="filled-in" id="toggleview" onclick="onView()" />
+        <label for="toggleview">Preview</label>
+      </div>
+      <div class="col s4">
+        <input type="checkbox" value="togglemarkers" class="filled-in" id="togglemarkers" onclick="onMarkers()" />
+        <label for="togglemarkers">Markers</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s12">
+        <div id="affdex_elements" style="width:680px;height:480px;"></div>
+      </div>
+    </div>
   </div>
-  <div id="affdex_elements" style="width:680px;height:480px;"></div>
-</div>
-<script src="js/jquery-2.2.4.min.js"></script>
-<script src="js/affdex_patched.js"></script>
-<script src="js/materialize.min.js"></script>
-<script src="app.js"></script>
+  <script src="js/jquery-2.2.4.min.js"></script>
+  <script src="js/affdex_patched.js"></script>
+  <script src="js/materialize.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
