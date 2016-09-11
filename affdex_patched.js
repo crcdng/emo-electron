@@ -317,8 +317,18 @@ affdex.CameraDetector = function(element, imgW, imgH, faceMode) {
   };
 
   self._startCamera = function() {
+    navigator.mediaDevices.enumerateDevices()
+    .then(function(devices) {
+      devices.forEach(function(device) {
+        console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
+      });
+      return devices;
+    }).catch(function(err) {
+      console.log(err.name + ": " + err.message);
+    });
+
     navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: { deviceId: { exact: "6368d12bfefad3a6bdc98ff349f308f9a3983122c0c1242e3747f888d32efa03" } },
       audio: false
     }).then(self.onWebcamReady).catch(self.getCallback("onWebcamConnect", false));
   };
