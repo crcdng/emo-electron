@@ -225,7 +225,7 @@ affdex.Detector.prototype.stop = function() {
   }
 };
 
-affdex.CameraDetector = function(element, imgW, imgH, faceMode) {
+affdex.CameraDetector = function(element, imgW, imgH, faceMode, constraints) {
 
   var self = this;
   affdex.Detector.call(self);
@@ -237,7 +237,7 @@ affdex.CameraDetector = function(element, imgW, imgH, faceMode) {
   var canvasElement = null;
   var canvasContext = null;
   var adapterJSVersion = "adapter-1.4.0.js";
-
+  var cameraConstraints = constraints || { video: true };
   self.faceDetectorMode = (typeof faceMode == 'undefined') ? affdex.FaceDetectorMode.LARGE_FACES : faceMode;
 
   var ctor = function() {
@@ -317,20 +317,7 @@ affdex.CameraDetector = function(element, imgW, imgH, faceMode) {
   };
 
   self._startCamera = function() {
-    navigator.mediaDevices.enumerateDevices()
-    .then(function(devices) {
-      devices.forEach(function(device) {
-        console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
-      });
-      return devices;
-    }).catch(function(err) {
-      console.log(err.name + ": " + err.message);
-    });
-
-    navigator.mediaDevices.getUserMedia({
-      video: { deviceId: { exact: "6368d12bfefad3a6bdc98ff349f308f9a3983122c0c1242e3747f888d32efa03" } },
-      audio: false
-    }).then(self.onWebcamReady).catch(self.getCallback("onWebcamConnect", false));
+    navigator.mediaDevices.getUserMedia(cameraConstraints).then(self.onWebcamReady).catch(self.getCallback("onWebcamConnect", false));
   };
 
   self.start = function() {

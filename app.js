@@ -28,13 +28,18 @@ function drawFeaturePoints(img, featurePoints) {
   }
 }
 
-function logf(node_name, msg) {
-  log.info(`${node_name} ${msg}`);
-  // $(node_name).append("<span>" + msg + "</span><br />")
+function logf(category, msg, logToConsole, logToUi) {
+  var logMsg = `${category} ${msg}`;
+  log.info(logMsg);
+  if (logToConsole) { console.log(logMsg); }
+  if (logToUi) { $(category).append("<span>" + logMsg + "</span><br />"); }
 }
 
 function initDetector() {
-  var detector = new affdex.CameraDetector(divRoot, width, height, faceMode);
+  var detector = new affdex.CameraDetector(divRoot, width, height, faceMode, {
+    video: { deviceId: { exact: "6368d12bfefad3a6bdc98ff349f308f9a3983122c0c1242e3747f888d32efa03" } },
+    audio: false
+  });
   //Enable detection of all Expressions, Emotions and Emojis classifiers.
   detector.detectAllEmotions();
   detector.detectAllExpressions();
@@ -88,33 +93,47 @@ function initDetector() {
   return detector;
 }
 
+function onGetSources(){
+  logf('#logs', "Clicked the get sources button", true);
+
+  navigator.mediaDevices.enumerateDevices()
+  .then(function(devices) {
+    devices.forEach(function(device) {
+      console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
+    });
+    return devices;
+  }).catch(function(err) {
+    console.log(err.name + ": " + err.message);
+  });
+}
+
 function onMarkers() {
-  logf('#logs', "Clicked the markers button");
+  logf('#logs', "Clicked the markers button", true);
   // markers only make sense when view is enabled
   if (!view) { return; }
   markers = !markers;
 }
 
 function onReset() {
-  logf('#logs', "Clicked the reset button");
+  logf('#logs', "Clicked the reset button", true);
   if (detector && detector.isRunning) {
     detector.reset();
   }
 }
 
 function onSourceChanged() {
-  
+
 }
 
 function onStart() {
+  logf('#logs', "Clicked the start button", true);
   if (detector && !detector.isRunning) {
     detector.start();
   }
-  logf('#logs', "Clicked the start button");
 }
 
 function onStop() {
-  logf('#logs', "Clicked the stop button");
+  logf('#logs', "Clicked the stop button", true);
   if (detector && detector.isRunning) {
     detector.removeEventListener();
     detector.stop();
@@ -122,7 +141,7 @@ function onStop() {
 }
 
 function onView() {
-  logf('#logs', "Clicked the view button");
+  logf('#logs', "Clicked the view button", true);
   if (!view) { // switch it on
     $("#face_video_canvas").css("display", "block");
     $("#face_video_canvas").css("visibility", "visible");
