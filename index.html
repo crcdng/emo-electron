@@ -23,16 +23,18 @@
     <div>
       <p>
         <strong>emotion logger</strong>
-        <br/>Press the start button to start the detector.
-        <br/> When a face is detected, the probabilities of the different emotions are written to the log.
-        <br/> Press the stop button to end the detector.
+        <br/> 1. Get cameras, then select a camera.
+        <br/> 2. Start the detector.
+        <br/> When a face is detected, the probabilities of the different emotions are written to the log file.
+        The location of the logfile (on the Mac) is: &#126;Library/Logs/emotion-logger/
+        <br/> Press the stop button to end the detector. Move or rename the logfile before the next session.
       </p>
 
-        <button id="getsources" onclick="onGetSources">Get Sources</button>
+        <button id="getsources" onclick="onGetSources()">Get Cameras</button>
         <select id="sources" onchange = "onSourceChanged()"></select>
         <button id="start" onclick="onStart()">Start</button>
         <button id="stop" onclick="onStop()">Stop</button>
-        <button id="reset" onclick="onReset()">Reset</button>
+        <!-- <button id="reset" onclick="onReset()">Reset</button> -->
         <button id="toggleview" onclick="onView()">Toggle View</button>
         <button id="togglemarkers" onclick="onMarkers()">Toggle Markers</button>
     </div>

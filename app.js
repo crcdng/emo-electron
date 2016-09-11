@@ -5,11 +5,12 @@ var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
 var log = require('electron-log');
 var view = false;
 var markers = false;
-// Here we are adding those nodes a predefined div.
+var sourceConstraints = { video: true }; // constraints for input camera
+var sourceIDs = []; // select input camera
 var width = 640;
 var height = 480;
 
-log.transports.console = false;
+log.transports.console = false; // broken, use console.log to log to console
 
 function drawFeaturePoints(img, featurePoints) {
   var contxt = $('#face_video_canvas')[0].getContext('2d');
@@ -30,16 +31,13 @@ function drawFeaturePoints(img, featurePoints) {
 
 function logf(category, msg, logToConsole, logToUi) {
   var logMsg = `${category} ${msg}`;
-  log.info(logMsg);
   if (logToConsole) { console.log(logMsg); }
+  log.info(logMsg);
   if (logToUi) { $(category).append("<span>" + logMsg + "</span><br />"); }
 }
 
 function initDetector() {
-  var detector = new affdex.CameraDetector(divRoot, width, height, faceMode, {
-    video: { deviceId: { exact: "6368d12bfefad3a6bdc98ff349f308f9a3983122c0c1242e3747f888d32efa03" } },
-    audio: false
-  });
+  var detector = new affdex.CameraDetector(divRoot, width, height, faceMode, sourceConstraints);
   //Enable detection of all Expressions, Emotions and Emojis classifiers.
   detector.detectAllEmotions();
   detector.detectAllExpressions();
@@ -99,12 +97,29 @@ function onGetSources(){
   navigator.mediaDevices.enumerateDevices()
   .then(function(devices) {
     devices.forEach(function(device) {
-      console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
+    //  logf("#logs", device.kind + ": " + device.label + " id = " + device.deviceId, true);
     });
     return devices;
   }).catch(function(err) {
-    console.log(err.name + ": " + err.message);
-  });
+    logf("#error", err.name + ": " + err.message, true);
+  }).then(onGotSources);
+}
+
+function onGotSources(sourceInfos) {
+  var i, selectList, storageIndex;
+
+  selectList = document.getElementById("sources");
+  selectList.options.length = 0;
+  storageIndex = 0;
+  for (i=0; i < sourceInfos.length; i++) {
+    // logf("#logs", sourceInfos[i], true);
+    if (sourceInfos[i].kind === 'videoinput') {
+      selectList.options.add(new Option(sourceInfos[i].label), i);
+      sourceIDs[storageIndex] = sourceInfos[i].deviceId;
+      storageIndex++;
+    }
+  }
+  onSourceChanged(); // set the initially displayed entry in the selection list
 }
 
 function onMarkers() {
@@ -122,11 +137,16 @@ function onReset() {
 }
 
 function onSourceChanged() {
+  var selectList = document.getElementById("sources");
+  var selected = sourceIDs[selectList.selectedIndex];
+  logf("#logs", "Active camera deviceId: " + selected, true);
 
+  setSourceConstraintId(selected);
 }
 
 function onStart() {
   logf('#logs', "Clicked the start button", true);
+  detector = initDetector();
   if (detector && !detector.isRunning) {
     detector.start();
   }
@@ -152,4 +172,6 @@ function onView() {
   view = !view;
 }
 
-detector = initDetector();
+function setSourceConstraintId(id) {
+  sourceConstraints = { video: { deviceId: { exact: id } } };
+}
