@@ -46,7 +46,7 @@
         <label for="port">Port</label>
       </div>
       <div class="input-field col s2">
-        <a class="waves-effect waves-light btn">Update</a>
+        <a disabled class="waves-effect waves-light btn" onclick="onUpdateOSCParameters()">Update</a>
       </div>
     </div>
     <div class="row"> <!-- log file -->
@@ -59,12 +59,12 @@
         <label for="logfile">Logfile</label>
       </div>
     </div>
-    <div class="row"> <!-- switch detector -->
+    <div class="row"> <!-- toggle detector -->
       <div class="col s4">
         <div class="switch">
           <label>
             Off
-            <input type="checkbox" id="toggle" onclick="onToggle()">
+            <input type="checkbox" id="toggle" onclick="onToggleDetector()">
             <span class="lever"></span>
             On
           </label>
@@ -87,7 +87,7 @@
     </div>
     <div class="row"> <!-- logo and credits -->
       <div class="col s6">
-        written by Michael Straeubg @crcdng
+        written by Michael Straeubig @crcdng
       </div>
       <div class="col s6">
         <img width="180" src="assets/powered_by_affdex_logo.png">

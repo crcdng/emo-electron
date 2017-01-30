@@ -5,10 +5,26 @@ var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
 var height = 480;
 var log = require('electron-log');
 var markers = false;
+var osc = require('osc');
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
+var udpPort = new osc.UDPPort({
+    localAddress: "0.0.0.0",
+    localPort: 57121
+});
 var view = false;
 var width = 640;
+
+// Open the socket.
+udpPort.open();
+
+// When the port is read, send an OSC message to, say, SuperCollider
+udpPort.on("ready", function () {
+    udpPort.send({
+        address: "/s_new",
+        args: ["default", 100]
+    }, "127.0.0.1", 57110);
+});
 
 log.transports.console = false; // broken, use console.log to log to console
 
@@ -167,7 +183,7 @@ function stop() {
   }
 }
 
-function onToggle() {
+function onToggleDetector() {
   logf('#logs', "Clicked the toggle switch", true);
   if ($("#toggle").is(':checked')) {
     start();
@@ -177,7 +193,7 @@ function onToggle() {
 }
 
 function onView() {
-  logf('#logs', "Clicked the view button", true);
+  logf('#logs', "Clicked the view field", true);
   if (!view) { // switch it on
     $("#face_video_canvas").css("display", "block");
     $("#face_video_canvas").css("visibility", "visible");
