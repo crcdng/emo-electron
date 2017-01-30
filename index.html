@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Emotion Logger</title>
+  <title>emotion detector</title>
   <!-- necessary because Electron o.O -->
   <script>
   window.nodeRequire = require;
@@ -16,23 +16,50 @@
   <div class="container">
     <div class="row">
       <div class="col m12">
-        <h5>emotion logger</h5>
-        <br/> 1. Get cameras, then select a camera.
-        <br/> 2. Switch on the detector.
-        <br/> When a face is detected, the probabilities of the different emotions are written to the log file.
-        The location of the logfile (on the Mac) is: &#126;Library/Logs/emotion-logger/
+        <h5>emotion detector</h5>
+        <br/> 1. Get the connected cameras, then select a camera.
+        <br/> 2. Select if you want to write to send OSC data, write to a logfile, or both. The location of the logfile (on the Mac) is: &#126;Library/Logs/emotion-logger/.
+        <br/> 3. Switch on the detector.
+        <br/> When a face is detected, the probabilities of the different emotions are sent via OSC / written to the log file.
         <br/> When done, switch off the detector. Move or rename the logfile before the next session.
       </div>
     </div>
     <div class="row">
-      <div class="col s4">
+      <div class="col s4"> <!-- get cameras -->
         <button id="getsources" class="waves-effect waves-light btn" onclick="onGetSources()">Get Cameras</button>
       </div>
       <div class="input-field">
         <select id="sources" class="col s6" onchange="onSourceChanged()"></select>
       </div>
     </div>
-    <div class="row">
+    <div class="row"> <!-- OSC -->
+      <div class="input-field col s4">
+        <input type="checkbox" value="toggleosc" class="filled-in" id="toggleosc" onclick="onOSCToggle()" />
+        <label for="toggleosc">Send OSC</label>
+      </div>
+      <div class="input-field col s2">
+        <input id="host" type="text" class="validate">
+        <label for="host">Host</label>
+      </div>
+      <div class="input-field col s2">
+        <input id="port" type="text" class="validate">
+        <label for="port">Port</label>
+      </div>
+      <div class="input-field col s2">
+        <a class="waves-effect waves-light btn">Update</a>
+      </div>
+    </div>
+    <div class="row"> <!-- log file -->
+      <div class="input-field col s4">
+        <input type="checkbox" value="togglelog" class="filled-in" id="togglelog" onclick="onLOGToggle()" />
+        <label for="togglelog">Write Log</label>
+      </div>
+      <div class="input-field col s4">
+        <input disabled value="~Library/Logs/emotion-logger/" id="logfile" type="text" class="validate">
+        <label for="logfile">Logfile</label>
+      </div>
+    </div>
+    <div class="row"> <!-- switch detector -->
       <div class="col s4">
         <div class="switch">
           <label>
@@ -56,6 +83,14 @@
     <div class="row">
       <div class="col s12">
         <div id="affdex_elements" style="width:680px;height:480px;"></div>
+      </div>
+    </div>
+    <div class="row"> <!-- logo and credits -->
+      <div class="col s6">
+        written by Michael Straeubg @crcdng
+      </div>
+      <div class="col s6">
+        <img width="180" src="assets/powered_by_affdex_logo.png">
       </div>
     </div>
   </div>

@@ -15,6 +15,7 @@ log.transports.console = false; // broken, use console.log to log to console
 // required by materialize
 $(document).ready(function() {
   $('select').material_select();
+  Materialize.updateTextFields();
 });
 
 function drawFeaturePoints(img, featurePoints) {
