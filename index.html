@@ -26,15 +26,15 @@
     </div>
     <div class="row">
       <div class="col s4"> <!-- get cameras -->
-        <button id="getsources" class="waves-effect waves-light btn" onclick="onGetSources()">Get Cameras</button>
+        <button id="getsources" class="waves-effect waves-light btn" onclick="onUIGetSources()">Get Cameras</button>
       </div>
       <div class="input-field">
-        <select id="sources" class="col s6" onchange="onSourceChanged()"></select>
+        <select id="sources" class="col s6" onchange="onUISourceChanged()"></select>
       </div>
     </div>
     <div class="row"> <!-- OSC -->
       <div class="input-field col s4">
-        <input type="checkbox" value="toggleosc" class="filled-in" id="toggleosc" onclick="onOSCToggle()" />
+        <input type="checkbox" value="toggleosc" class="filled-in" id="toggleosc" onclick="onUIToggleOSC()" />
         <label for="toggleosc">Send OSC</label>
       </div>
       <div class="input-field col s2">
@@ -46,12 +46,12 @@
         <label for="port">Port</label>
       </div>
       <div class="input-field col s2">
-        <a disabled class="waves-effect waves-light btn" onclick="onUpdateOSCParameters()">Update</a>
+        <a disabled class="waves-effect waves-light btn" onclick="onUIUpdateOSCParameters()">Update</a>
       </div>
     </div>
     <div class="row"> <!-- log file -->
       <div class="input-field col s4">
-        <input type="checkbox" value="togglelog" class="filled-in" id="togglelog" onclick="onLOGToggle()" />
+        <input type="checkbox" value="togglelog" class="filled-in" id="togglelog" onclick="onUIToggleLogfile()" />
         <label for="togglelog">Write Log</label>
       </div>
       <div class="input-field col s4">
@@ -64,7 +64,7 @@
         <div class="switch">
           <label>
             Off
-            <input type="checkbox" id="toggle" onclick="onToggleDetector()">
+            <input type="checkbox" id="toggle" onclick="onUIToggleDetector()">
             <span class="lever"></span>
             On
           </label>
@@ -72,11 +72,11 @@
       </div>
       <!-- <button id="reset" onclick="onReset()">Reset</button> -->
       <div class="col s4">
-        <input type="checkbox" value="toggleview" class="filled-in" id="toggleview" onclick="onView()" />
+        <input type="checkbox" value="toggleview" class="filled-in" id="toggleview" onclick="onUIToggleView()" />
         <label for="toggleview">Preview</label>
       </div>
       <div class="col s4">
-        <input type="checkbox" value="togglemarkers" class="filled-in" id="togglemarkers" onclick="onMarkers()" />
+        <input type="checkbox" value="togglemarkers" class="filled-in" id="togglemarkers" onclick="onUIToggleMarkers()" />
         <label for="togglemarkers">Markers</label>
       </div>
     </div>
@@ -95,7 +95,7 @@
     </div>
   </div>
   <script src="js/jquery-2.2.4.min.js"></script>
-  <script src="js/affdex_patched.js"></script>
+  <script src="js/affdex_p.js"></script>
   <script src="js/materialize.min.js"></script>
   <script src="app.js"></script>
 </body>

@@ -6,6 +6,9 @@ var height = 480;
 var log = require('electron-log');
 var markers = false;
 var osc = require('osc');
+var remoteAddress = "127.0.0.1";
+var remotePort = 12000;
+var settings = { logToFile: false, logToScreen: false, sendOSC: true };
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
 var udpPort = new osc.UDPPort({
@@ -17,21 +20,20 @@ var width = 640;
 
 // Open the socket.
 udpPort.open();
-
-// When the port is read, send an OSC message to, say, SuperCollider
-udpPort.on("ready", function () {
-    udpPort.send({
-        address: "/s_new",
-        args: ["default", 100]
-    }, "127.0.0.1", 57110);
-});
-
 log.transports.console = false; // broken, use console.log to log to console
 
 // required by materialize
 $(document).ready(function() {
   $('select').material_select();
   Materialize.updateTextFields();
+});
+
+// When the port is ready, send ping
+udpPort.on("ready", function () {
+    udpPort.send({
+        address: "/ping",
+        args: ["default", 100]
+    }, remoteAddress, remotePort);
 });
 
 function drawFeaturePoints(img, featurePoints) {
@@ -94,16 +96,23 @@ function initDetector() {
   //The faces object contains the list of the faces detected in an image.
   //Faces object contains probabilities for all the different expressions, emotions and appearance metrics
   detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
-  // $('#results').html("");
-    logf('#results', `Timestamp: ${timestamp.toFixed(2)}`);
-    logf('#results', `Number of faces found: ${faces.length}`);
+    // $('#results').html("");
+    const timestamp = `Timestamp: ${timestamp.toFixed(2)}`;
+    const numFaces = `Number of faces found: ${faces.length}`;
+    const appearance = `Appearance: ${JSON.stringify(faces[0].appearance)}`;
+    const emotions = `Emotions: ${JSON.stringify(faces[0].emotions, function(key, val) {
+      return val.toFixed ? Number(val.toFixed(0)) : val;})}`;
+    const expressions = `Expressions: ${JSON.stringify(faces[0].expressions, function(key, val) {
+      return val.toFixed ? Number(val.toFixed(0)) : val})}`;
+    const emoji = `Emoji: ${faces[0].emojis.dominantEmoji}`;
+
+    logf('#results', timestamp);
+    logf('#results', numFaces);
     if (faces.length > 0) {
-      logf('#results', `Appearance: ${JSON.stringify(faces[0].appearance)}`);
-      logf('#results', `Emotions: " + ${JSON.stringify(faces[0].emotions, function(key, val) {
-        return val.toFixed ? Number(val.toFixed(0)) : val;})}`);
-      logf('#results', `Expressions:  + ${JSON.stringify(faces[0].expressions, function(key, val) {
-        return val.toFixed ? Number(val.toFixed(0)) : val})}`);
-      logf('#results', "Emoji: " + faces[0].emojis.dominantEmoji);
+      logf('#results', appearance);
+      logf('#results', emotions);
+      logf('#results', expressions);
+      logf('#results', emoji);
       if (markers) {
         drawFeaturePoints(image, faces[0].featurePoints);
       }
@@ -113,18 +122,8 @@ function initDetector() {
   return detector;
 }
 
-function onGetSources(){
-  logf('#logs', "Clicked the get sources button", true);
+function initUI() {
 
-  navigator.mediaDevices.enumerateDevices()
-  .then(function(devices) {
-    devices.forEach(function(device) {
-    //  logf("#logs", device.kind + ": " + device.label + " id = " + device.deviceId, true);
-    });
-    return devices;
-  }).catch(function(err) {
-    logf("#error", err.name + ": " + err.message, true);
-  }).then(onGotSources);
 }
 
 function onGotSources(sourceInfos) {
@@ -145,26 +144,78 @@ function onGotSources(sourceInfos) {
   onSourceChanged(); // set the initially displayed entry in the selection list
 }
 
-function onMarkers() {
+function onUIGetSources(){
+  logf('#logs', "Clicked the get sources button", true);
+
+  navigator.mediaDevices.enumerateDevices()
+  .then(function(devices) {
+    devices.forEach(function(device) {
+    //  logf("#logs", device.kind + ": " + device.label + " id = " + device.deviceId, true);
+    });
+    return devices;
+  }).catch(function(err) {
+    logf("#error", err.name + ": " + err.message, true);
+  }).then(onGotSources);
+}
+
+function onUIToggleMarkers() {
   logf('#logs', "Clicked the markers button", true);
   // markers only make sense when view is enabled
   if (!view) { return; }
   markers = !markers;
 }
 
-function onReset() {
+function onUIReset() {
   logf('#logs', "Clicked the reset button", true);
   if (detector && detector.isRunning) {
     detector.reset();
   }
 }
 
-function onSourceChanged() {
+function onUISourceChanged() {
   var selectList = document.getElementById("sources");
   var selected = sourceIDs[selectList.selectedIndex];
   logf("#logs", "Active camera deviceId: " + selected, true);
 
   setSourceConstraintId(selected);
+}
+
+function onUIToggleDetector() {
+  logf('#logs', "Clicked the toggle switch", true);
+  if ($("#toggle").is(':checked')) {
+    start();
+  } else {
+    stop();
+  }
+}
+
+function onUIToggleLogfile() {}
+
+function onUIToggleOSC() {}
+
+function onUIToggleView() {
+  logf('#logs', "Clicked the view field", true);
+  if (!view) { // switch it on
+    $("#face_video_canvas").css("display", "block");
+    $("#face_video_canvas").css("visibility", "visible");
+  } else {
+    $("#face_video_canvas").css("display", "none");
+    $("#face_video_canvas").css("visibility", "hidden");
+  }
+  view = !view;
+}
+
+function onUIUpdateOSCParameters() {}
+
+function sendOSC(msg, args) {
+  udpPort.send({
+      address: msg,   // /message
+      args: args      // [arrrrrrghhh1, arg2, ...]
+  }, remoteAddress, remotePort);
+}
+
+function setSourceConstraintId(id) {
+  sourceConstraints = { video: { deviceId: { exact: id } } };
 }
 
 function start() {
@@ -181,29 +232,4 @@ function stop() {
     detector.removeEventListener();
     detector.stop();
   }
-}
-
-function onToggleDetector() {
-  logf('#logs', "Clicked the toggle switch", true);
-  if ($("#toggle").is(':checked')) {
-    start();
-  } else {
-    stop();
-  }
-}
-
-function onView() {
-  logf('#logs', "Clicked the view field", true);
-  if (!view) { // switch it on
-    $("#face_video_canvas").css("display", "block");
-    $("#face_video_canvas").css("visibility", "visible");
-  } else {
-    $("#face_video_canvas").css("display", "none");
-    $("#face_video_canvas").css("visibility", "hidden");
-  }
-  view = !view;
-}
-
-function setSourceConstraintId(id) {
-  sourceConstraints = { video: { deviceId: { exact: id } } };
 }
