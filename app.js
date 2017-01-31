@@ -1,13 +1,13 @@
+var log = require("electron-log");
+var osc = require("osc");
+
 var detector;
 // affectiva SDK Needs to create video and canvas nodes in the DOM in order to function :((
 var divRoot = $("#affdex_elements")[0];
 var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
 var height = 480;
-var log = require('electron-log');
-var osc = require('osc');
-var remoteAddress = "127.0.0.1";
-var remotePort = 12000;
-var settings = { logToFile: false, logToConsole: false, markers: false, sendOSC: true, view: false };
+var oscParameters = { remoteAddress: "127.0.0.1", remotePort: 12000 } ;
+var settings = { logFile: "~Library/Logs/emotion-logger/", logToFile: false, logToConsole: false, markers: false, sendOSC: false, view: false };
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
 var udpPort = new osc.UDPPort({
@@ -16,22 +16,15 @@ var udpPort = new osc.UDPPort({
 });
 var width = 640;
 
-// Open the socket.
-udpPort.open();
-log.transports.console = false; // broken, use console.log to log to console
-
-// required by materialize
 $(document).ready(function() {
-  $('select').material_select();
-  Materialize.updateTextFields();
+  udpPort.open();
+  log.transports.console = false; // broken, use console.log to log to console
+  initUI();
 });
 
 // When the port is ready, send ping
 udpPort.on("ready", function () {
-    udpPort.send({
-        address: "/ping",
-        args: ["default", 100]
-    }, remoteAddress, remotePort);
+  settings.sendOSC = true;
 });
 
 function drawFeaturePoints(img, featurePoints) {
@@ -47,15 +40,13 @@ function drawFeaturePoints(img, featurePoints) {
     contxt.arc(featurePoints[id].x,
       featurePoints[id].y, 2, 0, 2 * Math.PI);
       contxt.stroke();
-
   }
 }
 
-function logf(category, msg, logToConsole, logToUi) {
-  var logMsg = `${category} ${msg}`;
+function logf(category, msg, logToFile, logToConsole) {
+  const logMsg = `${category} ${msg}`;
+  if (logToFile) { log.info(logMsg); console.log("logToFile: " + logToFile) }
   if (logToConsole) { console.log(logMsg); }
-  log.info(logMsg);
-  if (logToUi) { $(category).append("<span>" + logMsg + "</span><br />"); }
 }
 
 function initDetector() {
@@ -66,14 +57,14 @@ function initDetector() {
   // detector.detectAllEmojis();
   detector.detectAllAppearance();
   detector.addEventListener("onWebcamConnectSuccess", function() {
-    logf('#logs', "Webcam access ok");
+    logf('#emo-detector', "Webcam access ok", settings.logToFile, settings.logToConsole);
     $("#face_video_canvas").css("display", "none");
     $("#face_video_canvas").css("visibility", "hidden");
     $("#face_video").css("display", "none");
   });
 
   detector.addEventListener("onInitializeSuccess", function() {
-    logf('#logs', "The detector reports initialized");
+    logf('#emo-detector', "The detector reports initialized", settings.logToFile, settings.logToConsole);
     $("#face_video_canvas").css("display", "none");
     $("#face_video_canvas").css("visibility", "hidden");
     $("#face_video").css("display", "none");
@@ -81,12 +72,12 @@ function initDetector() {
   });
 
   detector.addEventListener("onWebcamConnectFailure", function() {
-    logf('#logs', "webcam denied");
+    logf('#emo-detector', "webcam denied", settings.logToFile, settings.logToConsole);
     console.log("Webcam access denied");
   });
 
   detector.addEventListener("onStopSuccess", function() {
-    logf('#logs', "The detector reports stopped");
+    logf('#emo-detector', "The detector reports stopped", settings.logToFile, settings.logToConsole);
     $("#results").html("");
   });
 
@@ -94,24 +85,43 @@ function initDetector() {
   //The faces object contains the list of the faces detected in an image.
   //Faces object contains probabilities for all the different expressions, emotions and appearance metrics
   detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
-    // $('#results').html("");
-    const timestamp = `Timestamp: ${timestamp.toFixed(2)}`;
-    const numFaces = `Number of faces found: ${faces.length}`;
-    const appearance = `Appearance: ${JSON.stringify(faces[0].appearance)}`;
-    const emotions = `Emotions: ${JSON.stringify(faces[0].emotions, function(key, val) {
-      return val.toFixed ? Number(val.toFixed(0)) : val;})}`;
-    const expressions = `Expressions: ${JSON.stringify(faces[0].expressions, function(key, val) {
-      return val.toFixed ? Number(val.toFixed(0)) : val})}`;
-    const emoji = `Emoji: ${faces[0].emojis.dominantEmoji}`;
-
-    logf('#results', timestamp);
-    logf('#results', numFaces);
+    let appearanceCmd, appearanceArgs, emotionsCmd, emotionsArgs, expressionsCmd, expressionsArgs, emojiCmd, emojiArgs;
+    const timestampCmd = "/timestamp";
+    const timestampArgs = timestamp.toFixed(2); // float
+    const numFacesCmd = "/numfaces";
+    const numFacesArgs = faces.length; // int
     if (faces.length > 0) {
-      logf('#results', appearance);
-      logf('#results', emotions);
-      logf('#results', expressions);
-      logf('#results', emoji);
-      if (settings.markers) {
+      appearanceCmd = "/appearance";
+      appearanceArgs = JSON.stringify(faces[0].appearance); // string
+      emotionsCmd = "/emotions";
+      emotionsArgs =  JSON.stringify(faces[0].emotions, function(key, val) {
+                              return val.toFixed ? Number(val.toFixed(0)) : val;});  // int
+      expressionsCmd = "/expressions";
+      expressionsArgs = JSON.stringify(faces[0].expressions, function(key, val) {
+                              return val.toFixed ? Number(val.toFixed(0)) : val});
+      emojiCmd = "/emoji";
+      emojiArgs = faces[0].emojis.dominantEmoji;
+    }
+
+    if(settings.sendOSC) {
+      sendOSC(timestampCmd, timestampArgs);
+      sendOSC(numFacesCmd, numFacesArgs);
+      if (faces.length > 0) {
+        sendOSC(appearanceCmd, appearanceArgs);
+        sendOSC(emotionsCmd, emotionsArgs);
+        sendOSC(expressionsCmd, expressionsArgs);
+        sendOSC(emojiCmd, emojiArgs);
+      }
+    }
+
+    logf('#emo-data', `${timestampCmd} ${timestampArgs}`, settings.logToFile, settings.logToConsole);
+    logf('#emo-data', `${numFacesCmd} ${numFacesArgs}`, settings.logToFile, settings.logToConsole);
+    if (faces.length > 0) {
+      logf('#emo-data', `${appearanceCmd} ${appearanceArgs}`, settings.logToFile, settings.logToConsole);
+      logf('#emo-data', `${emotionsCmd} ${emotionsArgs}`, settings.logToFile, settings.logToConsole);
+      logf('#emo-data', `${expressionsCmd} ${expressionsArgs}`, settings.logToFile, settings.logToConsole);
+      logf('#emo-data', `${emojiCmd} ${emojiArgs}`, settings.logToFile, settings.logToConsole);
+      if (settings.view && settings.markers) {
         drawFeaturePoints(image, faces[0].featurePoints);
       }
     }
@@ -121,7 +131,11 @@ function initDetector() {
 }
 
 function initUI() {
-
+  $('select').material_select(); // required by materialize
+  $("#host")[0].value = oscParameters.remoteAddress; // dom elements are in attribute [0] in materialize objects
+  $("#port")[0].value = oscParameters.remotePort;
+  $("#logfile")[0].value = settings.logToFile;
+  Materialize.updateTextFields(); // recommended by materialize
 }
 
 function onGotSources(sourceInfos) {
@@ -131,7 +145,7 @@ function onGotSources(sourceInfos) {
   selectList.options.length = 0;
   storageIndex = 0;
   for (i=0; i < sourceInfos.length; i++) {
-    // logf("#logs", sourceInfos[i], true);
+    // logf("#emo-detector", sourceInfos[i], settings.logToFile, settings.logToConsole);
     if (sourceInfos[i].kind === 'videoinput') {
       selectList.options.add(new Option(sourceInfos[i].label), i);
       sourceIDs[storageIndex] = sourceInfos[i].deviceId;
@@ -143,12 +157,10 @@ function onGotSources(sourceInfos) {
 }
 
 function onUIGetSources(){
-  logf('#logs', "Clicked the get sources button", true);
-
   navigator.mediaDevices.enumerateDevices()
   .then(function(devices) {
     devices.forEach(function(device) {
-    //  logf("#logs", device.kind + ": " + device.label + " id = " + device.deviceId, true);
+    //  logf("#emo-detector", device.kind + ": " + device.label + " id = " + device.deviceId, settings.logToFile, settings.logToConsole);
     });
     return devices;
   }).catch(function(err) {
@@ -162,17 +174,10 @@ function onUIToggleMarkers() {
   settings.markers = $("#togglemarkers").is(':checked');
 }
 
-function onUIReset() {
-  logf('#logs', "Clicked the reset button", true);
-  if (detector && detector.isRunning) {
-    detector.reset();
-  }
-}
-
 function onUISourceChanged() {
   var selectList = document.getElementById("sources");
   var selected = sourceIDs[selectList.selectedIndex];
-  logf("#logs", "Active camera deviceId: " + selected, true);
+  logf("#emo-detector", "Active camera deviceId: " + selected, settings.logToFile, settings.logToConsole);
 
   setSourceConstraintId(selected);
 }
@@ -210,7 +215,7 @@ function sendOSC(msg, args) {
   udpPort.send({
       address: msg,   // /message
       args: args      // [arrrrrrghhh1, arg2, ...]
-  }, remoteAddress, remotePort);
+  }, oscParameters.remoteAddress, oscParameters.remotePort);
 }
 
 function setSourceConstraintId(id) {
@@ -218,7 +223,7 @@ function setSourceConstraintId(id) {
 }
 
 function start() {
-  logf('#logs', "Start", true);
+  logf('#emo-detector', "Start", settings.logToFile, settings.logToConsole);
   detector = initDetector();
   if (detector && !detector.isRunning) {
     detector.start();
@@ -226,7 +231,7 @@ function start() {
 }
 
 function stop() {
-  logf('#logs', "Stop", true);
+  logf('#emo-detector', "Stop", settings.logToFile, settings.logToConsole);
   if (detector && detector.isRunning) {
     detector.removeEventListener();
     detector.stop();

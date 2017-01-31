@@ -17,11 +17,10 @@
     <div class="row">
       <div class="col m12">
         <h5>emotion detector</h5>
-        <br/> 1. Get the connected cameras, then select a camera.
-        <br/> 2. Select if you want to write to send OSC data, write to a logfile, or both. The location of the logfile (on the Mac) is: &#126;Library/Logs/emotion-logger/.
-        <br/> 3. Switch on the detector.
-        <br/> When a face is detected, the probabilities of the different emotions are sent via OSC / written to the log file.
-        <br/> When done, switch off the detector. Move or rename the logfile before the next session.
+        <br/> 1. Get the cameras connected to the computer, then select one.
+        <br/> 2. Select where you want emotion data being sent to: to another application via OSC, to a logfile, to the console. The location of the logfile (on the Mac) is fixed: &#126;Library/Logs/emotion-logger/.
+        <br/> 3. Switch on the detector. You can toggle a preview in the window and also see markers overlayed. When a face is detected, the probabilities of the different emotions are sent out to the destinations selected above.
+        <br/> 4. When done, switch off the detector. If you used the logfile, move or rename it before the next session.
       </div>
     </div>
     <div class="row">
@@ -59,7 +58,7 @@
         <label for="togglelogfile">Log To File</label>
       </div>
       <div class="input-field col s4">
-        <input disabled value="~Library/Logs/emotion-logger/" id="logfile" type="text" class="validate">
+        <input disabled id="logfile" type="text" class="validate">
         <label for="logfile">Logfile</label>
       </div>
     </div>
