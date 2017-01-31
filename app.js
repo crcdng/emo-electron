@@ -4,18 +4,16 @@ var divRoot = $("#affdex_elements")[0];
 var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
 var height = 480;
 var log = require('electron-log');
-var markers = false;
 var osc = require('osc');
 var remoteAddress = "127.0.0.1";
 var remotePort = 12000;
-var settings = { logToFile: false, logToScreen: false, sendOSC: true };
+var settings = { logToFile: false, logToConsole: false, markers: false, sendOSC: true, view: false };
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
 var udpPort = new osc.UDPPort({
     localAddress: "0.0.0.0",
     localPort: 57121
 });
-var view = false;
 var width = 640;
 
 // Open the socket.
@@ -113,7 +111,7 @@ function initDetector() {
       logf('#results', emotions);
       logf('#results', expressions);
       logf('#results', emoji);
-      if (markers) {
+      if (settings.markers) {
         drawFeaturePoints(image, faces[0].featurePoints);
       }
     }
@@ -141,7 +139,7 @@ function onGotSources(sourceInfos) {
     }
   }
   $('select').material_select(); // required by materialize
-  onSourceChanged(); // set the initially displayed entry in the selection list
+  onUISourceChanged(); // set the initially displayed entry in the selection list
 }
 
 function onUIGetSources(){
@@ -159,10 +157,9 @@ function onUIGetSources(){
 }
 
 function onUIToggleMarkers() {
-  logf('#logs', "Clicked the markers button", true);
   // markers only make sense when view is enabled
-  if (!view) { return; }
-  markers = !markers;
+  if (!settings.view) { return; }
+  settings.markers = $("#togglemarkers").is(':checked');
 }
 
 function onUIReset() {
@@ -181,28 +178,30 @@ function onUISourceChanged() {
 }
 
 function onUIToggleDetector() {
-  logf('#logs', "Clicked the toggle switch", true);
-  if ($("#toggle").is(':checked')) {
-    start();
-  } else {
-    stop();
-  }
+  $("#toggledetector").is(':checked') ? start() : stop();
 }
 
-function onUIToggleLogfile() {}
+function onUIToggleLogToConsole() {
+  settings.logToConsole = $("#togglelogconsole").is(':checked');
+}
 
-function onUIToggleOSC() {}
+function onUIToggleLogToFile() {
+  settings.logToFile = $("#togglelogfile").is(':checked');
+}
+
+function onUIToggleOSC() {
+  settings.sendOSC = $("#toggleosc").is(':checked');
+}
 
 function onUIToggleView() {
-  logf('#logs', "Clicked the view field", true);
-  if (!view) { // switch it on
+  settings.view = $("#toggleview").is(':checked');
+  if (settings.view) { // switch it on
     $("#face_video_canvas").css("display", "block");
     $("#face_video_canvas").css("visibility", "visible");
   } else {
     $("#face_video_canvas").css("display", "none");
     $("#face_video_canvas").css("visibility", "hidden");
   }
-  view = !view;
 }
 
 function onUIUpdateOSCParameters() {}
