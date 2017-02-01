@@ -78,6 +78,7 @@ function initDetector() {
   //Faces object contains probabilities for all the different expressions, emotions and appearance metrics
   detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
     let appearanceCmd, appearanceArgs, emotionsCmd, emotionsArgs, expressionsCmd, expressionsArgs, emojiCmd, emojiArgs;
+    let engagementCmd, engagementArgs, valenceCmd, valenceArgs;
     const timestampCmd = "/timestamp";
     const timestampArgs = timestamp.toFixed(2); // float
     const numFacesCmd = "/numfaces";
@@ -93,30 +94,54 @@ function initDetector() {
                               return val.toFixed ? Number(val.toFixed(0)) : val});
       emojiCmd = "/emoji";
       emojiArgs = faces[0].emojis.dominantEmoji;
+      engagementCmd = "/engagement";
+      engagementArgs = faces[0].emotions.engagement;
+      valenceCmd = "/valence";
+      valenceArgs = faces[0].emotions.valence;
     }
 
+    // not nice TODO restructure
+
     if(settings.sendOSC) {
-      sendOSC(timestampCmd, timestampArgs);
-      sendOSC(numFacesCmd, numFacesArgs);
+      if (settings.alldata) {
+        sendOSC(timestampCmd, timestampArgs);
+        sendOSC(numFacesCmd, numFacesArgs);
+      }
       if (faces.length > 0) {
-        sendOSC(appearanceCmd, appearanceArgs);
-        sendOSC(emotionsCmd, emotionsArgs);
-        sendOSC(expressionsCmd, expressionsArgs);
-        sendOSC(emojiCmd, emojiArgs);
+        if (settings.engagement) { sendOSC(engagementCmd, engagementArgs); }
+        if (settings.valence) { sendOSC(valenceCmd, valenceArgs); }
+        if (settings.alldata) {
+          sendOSC(appearanceCmd, appearanceArgs);
+          sendOSC(emotionsCmd, emotionsArgs);
+          sendOSC(expressionsCmd, expressionsArgs);
+          sendOSC(emojiCmd, emojiArgs);
+        }
       }
     }
 
-    logf('#emo-data', `${timestampCmd} ${timestampArgs}`, settings.logToFile, settings.logToConsole);
-    logf('#emo-data', `${numFacesCmd} ${numFacesArgs}`, settings.logToFile, settings.logToConsole);
+    if (settings.alldata) {
+      logf('#emo-data', `${timestampCmd} ${timestampArgs}`, settings.logToFile, settings.logToConsole);
+      logf('#emo-data', `${numFacesCmd} ${numFacesArgs}`, settings.logToFile, settings.logToConsole);
+    }
     if (faces.length > 0) {
-      logf('#emo-data', `${appearanceCmd} ${appearanceArgs}`, settings.logToFile, settings.logToConsole);
-      logf('#emo-data', `${emotionsCmd} ${emotionsArgs}`, settings.logToFile, settings.logToConsole);
-      logf('#emo-data', `${expressionsCmd} ${expressionsArgs}`, settings.logToFile, settings.logToConsole);
-      logf('#emo-data', `${emojiCmd} ${emojiArgs}`, settings.logToFile, settings.logToConsole);
-      if (settings.view && settings.markers) {
+      if (settings.engagement) { logf('#emo-data', `${engagementCmd} ${engagementArgs}`, settings.logToFile, settings.logToConsole); }
+      if (settings.valence) { logf('#emo-data', `${valenceCmd} ${valenceArgs}`, settings.logToFile, settings.logToConsole); }
+      if (settings.alldata) {
+        logf('#emo-data', `${appearanceCmd} ${appearanceArgs}`, settings.logToFile, settings.logToConsole);
+        logf('#emo-data', `${emotionsCmd} ${emotionsArgs}`, settings.logToFile, settings.logToConsole);
+        logf('#emo-data', `${expressionsCmd} ${expressionsArgs}`, settings.logToFile, settings.logToConsole);
+        logf('#emo-data', `${emojiCmd} ${emojiArgs}`, settings.logToFile, settings.logToConsole);
+      }
+    }
+
+
+    if (settings.view && settings.markers) {
+      if (faces.length > 0) {
         drawFeaturePoints(image, faces[0].featurePoints);
       }
     }
+
+
   });
 
   return detector;
