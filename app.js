@@ -1,20 +1,23 @@
-var log = require("./filelog");
-var osc = require("osc");
+"use strict";
 
-var detector;
+const log = require("./filelog");
+const osc = require("osc");
+
 // affectiva SDK Needs to create video and canvas nodes in the DOM in order to function :((
-var divRoot = $("#affdex_elements")[0];
-var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
-var height = 480;
-var oscParameters = { remoteAddress: "127.0.0.1", remotePort: 12000 } ;
-var settings = { alldata: false, engagement: true, logFile: log.getPath(), logToFile: false, logToConsole: false, markers: false, sendOSC: false, valence: true, view: false };
-var sourceConstraints = { video: true }; // constraints for input camera
-var sourceIDs = []; // select input camera
-var udpPort = new osc.UDPPort({
+const divRoot = $("#affdex_elements")[0];
+const oscParameters = { remoteAddress: "127.0.0.1", remotePort: 12000 } ;
+const settings = { alldata: false, engagement: true, logFile: log.getPath(), logToFile: false, logToConsole: false, markers: false, sendOSC: false, valence: true, view: false };
+const udpPort = new osc.UDPPort({
     localAddress: "0.0.0.0",
     localPort: 57121
 });
-var width = 640;
+
+let detector;
+let faceMode = affdex.FaceDetectorMode.LARGE_FACES;
+let height = 480;
+let sourceConstraints = { video: true }; // constraints for input camera
+let sourceIDs = []; // select input camera
+let width = 640;
 
 $(document).ready(function() {
   udpPort.open();
@@ -26,14 +29,14 @@ udpPort.on("ready", function () {
 });
 
 function drawFeaturePoints(img, featurePoints) {
-  var contxt = $('#face_video_canvas')[0].getContext('2d');
+  const contxt = $('#face_video_canvas')[0].getContext('2d');
 
-  var hRatio = contxt.canvas.width / img.width;
-  var vRatio = contxt.canvas.height / img.height;
-  var ratio = Math.min(hRatio, vRatio);
+  const hRatio = contxt.canvas.width / img.width;
+  const vRatio = contxt.canvas.height / img.height;
+  const ratio = Math.min(hRatio, vRatio);
 
   contxt.strokeStyle = "#FFFFFF";
-  for (var id in featurePoints) {
+  for (let id in featurePoints) {
     contxt.beginPath();
     contxt.arc(featurePoints[id].x,
       featurePoints[id].y, 2, 0, 2 * Math.PI);
@@ -42,7 +45,7 @@ function drawFeaturePoints(img, featurePoints) {
 }
 
 function initDetector() {
-  var detector = new affdex.CameraDetector(divRoot, width, height, faceMode, sourceConstraints);
+  const detector = new affdex.CameraDetector(divRoot, width, height, faceMode, sourceConstraints);
   //Enable detection of all Expressions, Emotions and Emojis classifiers.
   detector.detectAllEmotions();
   detector.detectAllExpressions();
@@ -133,17 +136,12 @@ function initDetector() {
         logf('#emo-data', `${emojiCmd} ${emojiArgs}`, settings.logToFile, settings.logToConsole);
       }
     }
-
-
     if (settings.view && settings.markers) {
       if (faces.length > 0) {
         drawFeaturePoints(image, faces[0].featurePoints);
       }
     }
-
-
   });
-
   return detector;
 }
 
@@ -167,12 +165,10 @@ function logf(category, msg, logToFile, logToConsole) {
 }
 
 function onGotSources(sourceInfos) {
-  var i, selectList, storageIndex;
-
-  selectList = document.getElementById("sources");
+  const selectList = document.getElementById("sources");
   selectList.options.length = 0;
-  storageIndex = 0;
-  for (i=0; i < sourceInfos.length; i++) {
+  let storageIndex = 0;
+  for (let i=0; i < sourceInfos.length; i++) {
     // logf("#emo-detector", sourceInfos[i], settings.logToFile, settings.logToConsole);
     if (sourceInfos[i].kind === 'videoinput') {
       selectList.options.add(new Option(sourceInfos[i].label), i);
@@ -204,10 +200,9 @@ function onUIOSCParamsChanged() {
 }
 
 function onUISourceChanged() {
-  var selectList = $("#sources");
-  var selected = sourceIDs[selectList.selectedIndex];
-  logf("#emo-detector", "Active camera deviceId: " + selected, settings.logToFile, settings.logToConsole);
-
+  const selectList = $("#sources");
+  const selected = sourceIDs[selectList.selectedIndex];
+  logf("#emo-detector", `Active camera deviceId: ${selected}`, settings.logToFile, settings.logToConsole);
   setSourceConstraintId(selected);
 }
 
