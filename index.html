@@ -18,9 +18,9 @@
       <div class="col m12">
         <h5>emotion detector</h5>
         <br/> 1. Get the cameras connected to the computer, then select one.
-        <br/> 2. Select where you want emotion data being sent to: to another application via OSC, to a logfile, to the console. The location of the logfile (on the Mac) is fixed: &#126;Library/Logs/emotion-logger/.
-        <br/> 3. Switch on the detector (it takes a few seconds to start). You can toggle a preview in the window and also see markers overlayed. When a face is detected, the probabilities of the different emotions are sent out to the destinations selected above.
-        <br/> 4. When done, switch off the detector. If you used the logfile, move or rename it before the next session.
+        <br/> 2. Select where you want emotion data being sent to: to another application via OSC, to a logfile, to the console.
+        <br/> 3. Switch on the detector (it takes a few seconds to start). You can toggle a preview in the window and also see markers overlayed. When a face is detected, the probabilities of the different emotions are sent out to the selected destinations.
+        <br/> 4. When done, switch off the detector. If you used the logfile, you can move or rename it before the next session. If you don't, it will append the existing logfile.
       </div>
     </div>
     <div class="row">
@@ -37,15 +37,15 @@
         <label for="toggleosc">Send OSC</label>
       </div>
       <div class="input-field col s3">
-        <input id="host" type="text" class="validate">
+        <input id="host" type="text" class="validate" onchange="onUIOSCParamsChanged()" onkeypress="this.onchange()" onpaste="this.onchange()" oninput="this.onchange()">
         <label for="host">Host</label>
       </div>
       <div class="input-field col s3">
-        <input id="port" type="text" class="validate">
+        <input id="port" type="text" class="validate" onchange="onUIOSCParamsChanged()" onkeypress="this.onchange()" onpaste="this.onchange()" oninput="this.onchange()">
         <label for="port">Port</label>
       </div>
       <div class="input-field col s2">
-        <a disabled class="waves-effect waves-light btn" onclick="onUIUpdateOSCParameters()">Update</a>
+        <a id="updateosc" class="waves-effect waves-light btn disabled" onclick="onUIUpdateOSCParameters()">Update</a>
       </div>
     </div>
     <div class="row"> <!-- log  -->
@@ -90,7 +90,7 @@
     </div>
     <div class="row"> <!-- logo and credits -->
       <div class="col s6">
-        written by Michael Straeubig @crcdng
+        by @crcdng
       </div>
       <div class="col s6">
         <img width="180" src="assets/powered_by_affdex_logo.png">

@@ -7,7 +7,7 @@ var divRoot = $("#affdex_elements")[0];
 var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
 var height = 480;
 var oscParameters = { remoteAddress: "127.0.0.1", remotePort: 12000 } ;
-var settings = { logFile: "~Library/Logs/emotion-logger/", logToFile: false, logToConsole: false, markers: false, sendOSC: false, view: false };
+var settings = { logFile: log.getPath(), logToFile: false, logToConsole: false, markers: false, sendOSC: false, view: false };
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
 var udpPort = new osc.UDPPort({
@@ -39,12 +39,6 @@ function drawFeaturePoints(img, featurePoints) {
       featurePoints[id].y, 2, 0, 2 * Math.PI);
       contxt.stroke();
   }
-}
-
-function logf(category, msg, logToFile, logToConsole) {
-  const logMsg = `${category} ${msg}`;
-  if (logToFile) { log.write(logMsg); }
-  if (logToConsole) { console.log(logMsg); }
 }
 
 function initDetector() {
@@ -138,6 +132,12 @@ function initUI() {
   Materialize.updateTextFields(); // recommended by materialize
 }
 
+function logf(category, msg, logToFile, logToConsole) {
+  const logMsg = `${category} ${msg}`;
+  if (logToFile) { log.write(logMsg); }
+  if (logToConsole) { console.log(logMsg); }
+}
+
 function onGotSources(sourceInfos) {
   var i, selectList, storageIndex;
 
@@ -168,14 +168,15 @@ function onUIGetSources(){
   }).then(onGotSources);
 }
 
-function onUIToggleMarkers() {
-  // markers only make sense when view is enabled
-  if (!settings.view) { return; }
-  settings.markers = $("#togglemarkers").is(':checked');
+function onUIOSCParamsChanged() {
+  const button = $("#updateosc");
+  if (button.hasClass("disabled")) {
+    button.removeClass("disabled");
+  }
 }
 
 function onUISourceChanged() {
-  var selectList = document.getElementById("sources");
+  var selectList = $("#sources");
   var selected = sourceIDs[selectList.selectedIndex];
   logf("#emo-detector", "Active camera deviceId: " + selected, settings.logToFile, settings.logToConsole);
 
@@ -194,6 +195,12 @@ function onUIToggleLogToFile() {
   settings.logToFile = $("#togglelogfile").is(':checked');
 }
 
+function onUIToggleMarkers() {
+  // markers only make sense when view is enabled
+  if (!settings.view) { return; }
+  settings.markers = $("#togglemarkers").is(':checked');
+}
+
 function onUIToggleOSC() {
   settings.sendOSC = $("#toggleosc").is(':checked');
 }
@@ -209,7 +216,15 @@ function onUIToggleView() {
   }
 }
 
-function onUIUpdateOSCParameters() {}
+function onUIUpdateOSCParameters() {
+  const button = $("#updateosc");
+  const host = $("#host")[0].value;
+  const port = $("#port")[0].value;
+  oscParameters.remoteAddress = host;
+  oscParameters.remotePort = port;
+  logf('#emo-detector', `oscParameters changed to: ${oscParameters.remoteAddress} ${oscParameters.remotePort}`, settings.logToFile, settings.logToConsole);
+  button.addClass("disabled");
+}
 
 function sendOSC(msg, args) {
   udpPort.send({

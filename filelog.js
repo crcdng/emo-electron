@@ -1,16 +1,20 @@
 "use strict";
 
 const EOL = require('os').EOL;
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
-const logfile = { path: `${__dirname}/log.txt` };
+const logfile = { path: `${__dirname}/log.txt` }; // o.O only works in current directory
 
 function init() {
   logfile.stream = fs.createWriteStream(
     logfile.path,
     { flags: 'a' }
   );
+}
+
+function getPath() {
+  return logfile.path;
 }
 
 function write(msg) {
@@ -24,3 +28,4 @@ function write(msg) {
 init();
 
 module.exports.write = write;
+module.exports.getPath = getPath;
