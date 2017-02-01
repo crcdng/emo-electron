@@ -1,4 +1,4 @@
-var log = require("electron-log");
+var log = require("./filelog");
 var osc = require("osc");
 
 var detector;
@@ -18,11 +18,9 @@ var width = 640;
 
 $(document).ready(function() {
   udpPort.open();
-  log.transports.console = false; // broken, use console.log to log to console
   initUI();
 });
 
-// When the port is ready, send ping
 udpPort.on("ready", function () {
   settings.sendOSC = true;
 });
@@ -45,7 +43,7 @@ function drawFeaturePoints(img, featurePoints) {
 
 function logf(category, msg, logToFile, logToConsole) {
   const logMsg = `${category} ${msg}`;
-  if (logToFile) { log.info(logMsg); console.log("logToFile: " + logToFile) }
+  if (logToFile) { log.write(logMsg); }
   if (logToConsole) { console.log(logMsg); }
 }
 
@@ -131,10 +129,12 @@ function initDetector() {
 }
 
 function initUI() {
+  $("#face_video_canvas").css("display", "none");
+  $("#face_video_canvas").css("visibility", "hidden");
   $('select').material_select(); // required by materialize
   $("#host")[0].value = oscParameters.remoteAddress; // dom elements are in attribute [0] in materialize objects
   $("#port")[0].value = oscParameters.remotePort;
-  $("#logfile")[0].value = settings.logToFile;
+  $("#logfile")[0].value = settings.logFile;
   Materialize.updateTextFields(); // recommended by materialize
 }
 
