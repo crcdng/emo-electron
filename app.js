@@ -7,7 +7,7 @@ var divRoot = $("#affdex_elements")[0];
 var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
 var height = 480;
 var oscParameters = { remoteAddress: "127.0.0.1", remotePort: 12000 } ;
-var settings = { logFile: log.getPath(), logToFile: false, logToConsole: false, markers: false, sendOSC: false, view: false };
+var settings = { alldata: false, engagement: true, logFile: log.getPath(), logToFile: false, logToConsole: false, markers: false, sendOSC: false, valence: true, view: false };
 var sourceConstraints = { video: true }; // constraints for input camera
 var sourceIDs = []; // select input camera
 var udpPort = new osc.UDPPort({
@@ -129,6 +129,9 @@ function initUI() {
   $("#host")[0].value = oscParameters.remoteAddress; // dom elements are in attribute [0] in materialize objects
   $("#port")[0].value = oscParameters.remotePort;
   $("#logfile")[0].value = settings.logFile;
+  $("#togglevalence")[0].checked = settings.valence;
+  $("#toggleengagement")[0].checked = settings.engagement;
+  $("#togglealldata")[0].checked = settings.alldata;
   Materialize.updateTextFields(); // recommended by materialize
 }
 
@@ -183,8 +186,16 @@ function onUISourceChanged() {
   setSourceConstraintId(selected);
 }
 
+function onUIToggleAllData() {
+  settings.alldata = $("#togglealldata").is(':checked');
+}
+
 function onUIToggleDetector() {
   $("#toggledetector").is(':checked') ? start() : stop();
+}
+
+function onUIToggleEngagement() {
+  settings.engagement = $("#toggleengagement").is(':checked');
 }
 
 function onUIToggleLogToConsole() {
@@ -203,6 +214,10 @@ function onUIToggleMarkers() {
 
 function onUIToggleOSC() {
   settings.sendOSC = $("#toggleosc").is(':checked');
+}
+
+function onUIToggleValence() {
+  settings.valence = $("#togglevalence").is(':checked');
 }
 
 function onUIToggleView() {
